@@ -53,16 +53,38 @@
 - BREWY DB 통계 분석
   - 전체 주문 수
   - 지점별 매출
-  - 인기 메뉴 TOP 5
+  - 인 메뉴 TOP 5
   - 카테고리별 매출
   - 일별 주문 현황
+ 
+### ✅ Phase 6. 스탬프/쿠폰 시스템 완료
+- stamps 테이블 설계/생성
+- coupons 테이블 설계/생성
+- 스탬프 적립 API
+- 스탬프 개수 조회 API
+- 쿠폰 목록 조회 API
+- 쿠폰 사용 API
+- 주문 완료 시 자동 스탬프 적립
+- 스탬프 10개 달성 시 쿠폰 자동 발급
 
-### 🔜 Phase 6. AI 연동 (진행중)
+### 🔜 Phase 7. AI 연동 (진행중)
 - OpenAI API 연동
 - 메뉴 추천 챗봇
 - FastAPI 서버 구축
 
-//AI Generate:parkynh2|20260518|16|
+### 🔜 Phase 8. 매출 통계 API (예정)
+- 일별/월별 매출 통계
+- 지점별 매출 비교
+- 관리자 전용 API
+
+### 🔜 Phase 9. 프론트엔드 (예정)
+- React 화면 구현
+- 백엔드 연동
+
+### 🔜 Phase 10. AWS 배포 (예정)
+- EC2 서버 배포
+- 도메인 연결
+- 실제 서비스 오픈
 
 ---
 
@@ -84,11 +106,41 @@
 ```bash
 brewy-backend/
 ├── app.js
-├── config/db.js
+├── config/
+│   └── db.js
 ├── routes/
+│   ├── auth.js
+│   ├── users.js
+│   ├── branches.js
+│   ├── products.js
+│   ├── orders.js
+│   ├── stamps.js      ← 신규!
+│   └── coupons.js     ← 신규!
 ├── controllers/
+│   ├── authController.js
+│   ├── userController.js
+│   ├── branchController.js
+│   ├── productController.js
+│   ├── orderController.js
+│   ├── stampController.js  ← 신규!
+│   └── couponController.js ← 신규!
 ├── models/
-└── middlewares/
+│   ├── User.js
+│   ├── Branch.js
+│   ├── Product.js
+│   ├── Order.js
+│   ├── Stamp.js       ← 신규!
+│   └── Coupon.js      ← 신규!
+├── middlewares/
+│   ├── auth.js
+│   └── errorHandler.js
+└── python/
+    ├── db/
+    │   └── connection.py
+    ├── analysis/
+    │   └── brewy_stats.py
+    └── chatbot/
+        └── menu_recommend.py
 ```
 
 ---
@@ -204,6 +256,31 @@ CREATE TABLE order_items (
   FOREIGN KEY (product_id)
     REFERENCES products(product_id)
 );
+
+CREATE TABLE stamps (
+  stamp_id   INT PRIMARY KEY AUTO_INCREMENT,
+  user_id    INT NOT NULL,
+  order_id   INT NOT NULL,
+  created_at DATETIME DEFAULT NOW(),
+  FOREIGN KEY (user_id)
+    REFERENCES users(user_id),
+  FOREIGN KEY (order_id)
+    REFERENCES orders(order_id)
+);
+
+CREATE TABLE coupons (
+  coupon_id   INT PRIMARY KEY AUTO_INCREMENT,
+  user_id     INT NOT NULL,
+  coupon_code VARCHAR(50) UNIQUE NOT NULL,
+  status      ENUM('active','used','expired')
+              DEFAULT 'active',
+  created_at  DATETIME DEFAULT NOW(),
+  expired_at  DATETIME NOT NULL,
+  used_at     DATETIME,
+  FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+);
+//AI Generate:parkynh2|20260518|25|6e56eb623db14d4db8ff7cafad831378
 ```
 
 ### 4) 🚀 서버 실행
@@ -306,14 +383,63 @@ npm start
 
 ---
 
+### 📡 API 목록
+
+### 인증
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | /api/auth/register | 회원가입 |
+| POST | /api/auth/login | 로그인 JWT 발급 |
+
+### 회원
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | /api/users/me | 내정보 조회 | ✅ |
+
+### 지점/메뉴
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | /api/branches | 지점 목록 |
+| GET | /api/products | 메뉴 목록 |
+| GET | /api/products/:id | 메뉴 상세 |
+
+### 주문
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | /api/orders | 주문 생성 | ✅ |
+| GET | /api/orders | 주문 목록 (필터) | ✅ |
+| GET | /api/orders/:id | 주문 상세 | ✅ |
+| PATCH | /api/orders/:id/cancel | 주문 취소 | ✅ |
+
+### 스탬프
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | /api/stamps | 스탬프 목록 | ✅ |
+| GET | /api/stamps/count | 스탬프 개수 | ✅ |
+
+### 쿠폰
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | /api/coupons | 쿠폰 목록 | ✅ |
+| POST | /api/coupons/use | 쿠폰 사용 | ✅ |
+
+
 ## 📚 학습 포인트
 
 - RESTful API 설계 원칙
 - JWT 인증/인가 구조
 - bcrypt 단방향 암호화
 - SQL Injection 방지
-- 트랜잭션 처리
-- AI 바이브코딩 활용법
+- 트랜잭션 처리 (beginTransaction/commit/rollback)
+- 동적 쿼리 구현 (req.query 활용)
+- FOR UPDATE 행 잠금
+- Java @Transactional vs Node.js 트랜잭션 비교
+- HTTP 메서드 (PUT vs PATCH 차이)
+- Python + MySQL 연동 (mysql-connector)
+- pandas DataFrame 데이터 분석
+- OpenAI API 연동 (챗봇)
+- 스탬프/쿠폰 비즈니스 로직 구현
+- AI 바이브코딩 활용법 (Cursor AI)
 
 ---
 
