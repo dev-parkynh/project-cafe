@@ -46,9 +46,23 @@
 - 주문 생성 (트랜잭션)
 - 주문 조회/취소
 
-### 🔜 Phase 5. AI 연동 (예정)
-- Python FastAPI
-- OpenAI 메뉴 추천 챗봇
+### ✅ Phase 5. Python 데이터 분석 완료
+- Python 3.13 환경 구축
+- mysql-connector-python 연동
+- pandas DataFrame 활용
+- BREWY DB 통계 분석
+  - 전체 주문 수
+  - 지점별 매출
+  - 인기 메뉴 TOP 5
+  - 카테고리별 매출
+  - 일별 주문 현황
+
+### 🔜 Phase 6. AI 연동 (진행중)
+- OpenAI API 연동
+- 메뉴 추천 챗봇
+- FastAPI 서버 구축
+
+//AI Generate:parkynh2|20260518|16|
 
 ---
 
