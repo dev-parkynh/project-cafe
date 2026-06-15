@@ -1,5 +1,4 @@
 // src/pages/MainPage.js
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -7,13 +6,11 @@ import ChatBot from '../components/ChatBot';
 
 function MainPage() {
   const navigate = useNavigate();
-
   const [products,  setProducts]  = useState([]);
   const [branches,  setBranches]  = useState([]);
   const [user,      setUser]      = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState('전체');
-  const [hoveredId, setHoveredId] = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -44,100 +41,144 @@ function MainPage() {
     navigate('/login');
   };
 
-  const categories = ['전체', '커피', '논커피', '디저트'];
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('/uploads')) {
+      return process.env.NODE_ENV === 'production'
+        ? url : `http://localhost:8080${url}`;
+    }
+    return url;
+  };
 
+  const categories = ['전체', '커피', '논커피', '디저트'];
   const filteredProducts = activeTab === '전체'
     ? products
     : products.filter(p => p.category_name === activeTab);
 
   if (loading) {
     return (
-      <div style={styles.loading}>
-        <div style={styles.loadingInner}>
-          <div style={styles.loadingLogo}>BREWY</div>
-          <p style={styles.loadingText}>잠시만 기다려주세요...</p>
+      <div className="flex items-center justify-center h-screen bg-[#F5F5F7]">
+        <div className="text-center">
+          <div className="text-3xl font-black tracking-widest text-[#1D1D1F] mb-3">BREWY</div>
+          <p className="text-sm text-[#86868B]">잠시만 기다려주세요...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
+    <div className="min-h-screen bg-[#F5F5F7] font-sans">
 
       {/* ── 헤더 ── */}
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <h1 style={styles.logo}>BREWY</h1>
-          <nav style={styles.nav}>
-            <span style={styles.greeting}>안녕하세요, <b>{user?.name}</b>님 👋</span>
-            <button style={styles.navBtn} onClick={() => navigate('/mypage')}>마이페이지</button>
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#D2D2D7]/50">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <h1 className="text-xl font-black tracking-widest text-[#1D1D1F]">BREWY</h1>
+          <nav className="flex items-center gap-3">
+            <span className="hidden sm:block text-sm text-[#86868B]">
+              안녕하세요, <span className="font-semibold text-[#1D1D1F]">{user?.name}</span>님
+            </span>
+            <button
+              onClick={() => navigate('/mypage')}
+              className="px-4 py-1.5 text-sm font-medium text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-full transition-colors"
+            >
+              마이페이지
+            </button>
             {localStorage.getItem('role') === 'admin' && (
-              <button style={{ ...styles.navBtn, ...styles.adminBtn }} onClick={() => navigate('/admin')}>
+              <button
+                onClick={() => navigate('/admin')}
+                className="px-4 py-1.5 text-sm font-medium text-[#0071E3] hover:bg-[#0071E3]/10 rounded-full transition-colors"
+              >
                 관리자
               </button>
             )}
-            <button style={styles.logoutBtn} onClick={handleLogout}>로그아웃</button>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-1.5 text-sm font-medium text-[#86868B] hover:bg-[#F5F5F7] rounded-full transition-colors"
+            >
+              로그아웃
+            </button>
           </nav>
         </div>
       </header>
 
-      {/* ── 히어로 배너 ── */}
-      <div style={styles.hero}>
-        <div style={styles.heroOverlay} />
-        <div style={styles.heroContent}>
-          <p style={styles.heroSub}>BREWY CAFE</p>
-          <h2 style={styles.heroTitle}>
+      {/* ── 히어로 ── */}
+      <div
+        className="relative h-72 flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" />
+        <div className="relative z-10 text-center text-white px-6">
+          <p className="text-xs font-semibold tracking-[4px] text-white/70 mb-3 uppercase">BREWY CAFE</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">
             오늘의 한 잔,<br />미리 주문하고 바로 픽업
           </h2>
-          <p style={styles.heroDesc}>대기 없이 편리하게, 브루이 카페의 시그니처 메뉴를 만나보세요</p>
+          <p className="text-sm text-white/70">대기 없이 편리하게, 브루이 카페의 시그니처 메뉴를 만나보세요</p>
         </div>
       </div>
 
-      <main style={styles.main}>
+      <main className="max-w-6xl mx-auto px-6 py-10">
 
-        {/* ── 지점 목록 ── */}
-        <section style={styles.section}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>📍 지점 안내</h2>
-            <span style={styles.sectionCount}>{branches.length}개 지점 운영중</span>
+        {/* ── 지점 안내 ── */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-[#1D1D1F]">지점 안내</h2>
+            <span className="text-sm text-[#86868B]">{branches.length}개 지점 운영중</span>
           </div>
-          <div style={styles.branchGrid}>
-            {branches.map(branch => (
-              <div key={branch.branch_id} style={styles.branchCard}>
-                <div style={styles.branchTop}>
-                  <div style={styles.branchIcon}>📍</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {branches.map(b => (
+              <div
+                key={b.branch_id}
+                className="bg-white rounded-2xl p-5 shadow-sm border border-[#F0F0F0] hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-10 h-10 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    📍
+                  </div>
                   <div>
-                    <h3 style={styles.branchName}>{branch.name}</h3>
-                    <p style={styles.branchAddress}>{branch.address}</p>
+                    <h3 className="font-semibold text-[#1D1D1F] text-sm">{b.name}</h3>
+                    <p className="text-xs text-[#86868B] mt-0.5">{b.address}</p>
                   </div>
                 </div>
-                <div style={styles.branchInfo}>
-                  <span style={styles.branchInfoItem}>📞 {branch.phone}</span>
-                  <span style={styles.branchInfoItem}>🕐 {branch.open_time} ~ {branch.close_time}</span>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-[#86868B] flex items-center gap-1.5">
+                    <span>📞</span> {b.phone}
+                  </span>
+                  <span className="text-xs text-[#86868B] flex items-center gap-1.5">
+                    <span>🕐</span> {b.open_time} ~ {b.close_time}
+                  </span>
                 </div>
-                <div style={styles.branchBadge}>영업중</div>
+                <div className="mt-3">
+                  <span className="inline-block px-2.5 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-full">
+                    영업중
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── 메뉴 ── */}
-        <section style={styles.section}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>☕ 메뉴</h2>
-            <span style={styles.sectionCount}>{filteredProducts.length}개</span>
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-bold text-[#1D1D1F]">메뉴</h2>
+            <span className="text-sm text-[#86868B]">{filteredProducts.length}개</span>
           </div>
 
           {/* 카테고리 탭 */}
-          <div style={styles.tabs}>
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
             {categories.map(cat => (
               <button
                 key={cat}
-                style={{
-                  ...styles.tab,
-                  ...(activeTab === cat ? styles.tabActive : {})
-                }}
                 onClick={() => setActiveTab(cat)}
+                className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                  activeTab === cat
+                    ? 'bg-[#1D1D1F] text-white shadow-sm'
+                    : 'bg-white text-[#86868B] border border-[#D2D2D7] hover:border-[#1D1D1F] hover:text-[#1D1D1F]'
+                }`}
               >
                 {cat}
               </button>
@@ -145,44 +186,46 @@ function MainPage() {
           </div>
 
           {/* 메뉴 그리드 */}
-          <div style={styles.menuGrid}>
-            {filteredProducts.map(product => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.map(p => (
               <div
-                key={product.product_id}
-                style={{
-                  ...styles.menuCard,
-                  opacity: product.is_sold_out === 1 ? 0.55 : 1,
-                  transform: hoveredId === product.product_id ? 'translateY(-6px)' : 'translateY(0)',
-                  boxShadow: hoveredId === product.product_id
-                    ? '0 12px 32px rgba(111,78,55,0.18)'
-                    : '0 2px 12px rgba(0,0,0,0.07)'
-                }}
-                onMouseEnter={() => setHoveredId(product.product_id)}
-                onMouseLeave={() => setHoveredId(null)}
+                key={p.product_id}
+                className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-[#F0F0F0] transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+                  p.is_sold_out === 1 ? 'opacity-50' : ''
+                }`}
               >
                 {/* 이미지 */}
-                {product.image_url ? (
-                  <img
-                    src={product.image_url.startsWith('/uploads')
-                      ? `http://localhost:8080${product.image_url}`
-                      : product.image_url}
-                    alt={product.name}
-                    style={styles.menuImg}
-                  />
-                ) : (
-                  <div style={styles.menuImgPlaceholder}>☕</div>
-                )}
+                <div className="relative">
+                  {getImageUrl(p.image_url) ? (
+                    <img
+                      src={getImageUrl(p.image_url)}
+                      alt={p.name}
+                      className="w-full h-40 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-[#F5F5F7] flex items-center justify-center text-4xl">
+                      ☕
+                    </div>
+                  )}
+                  {p.is_sold_out === 1 && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <span className="bg-white text-[#1D1D1F] text-xs font-bold px-3 py-1 rounded-full">
+                        품절
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                {/* 품절 뱃지 */}
-                {product.is_sold_out === 1 && (
-                  <div style={styles.soldoutBadge}>품절</div>
-                )}
-
-                <div style={styles.menuBody}>
-                  <span style={styles.categoryBadge}>{product.category_name}</span>
-                  <h3 style={styles.menuName}>{product.name}</h3>
-                  <p style={styles.menuDesc}>{product.description}</p>
-                  <p style={styles.menuPrice}>{product.price?.toLocaleString()}원</p>
+                {/* 정보 */}
+                <div className="p-4">
+                  <span className="inline-block px-2 py-0.5 bg-[#F5F5F7] text-[#86868B] text-xs rounded-md mb-2">
+                    {p.category_name}
+                  </span>
+                  <h3 className="font-semibold text-[#1D1D1F] text-sm mb-1">{p.name}</h3>
+                  <p className="text-xs text-[#AEAEB2] mb-2 line-clamp-2">{p.description}</p>
+                  <p className="font-bold text-[#1D1D1F] text-base">
+                    {p.price?.toLocaleString()}원
+                  </p>
                 </div>
               </div>
             ))}
@@ -195,125 +238,5 @@ function MainPage() {
     </div>
   );
 }
-
-const BROWN = '#6f4e37';
-const LIGHT = '#f5ede6';
-
-const styles = {
-  container: { minHeight: '100vh', backgroundColor: '#f7f4f1', fontFamily: "'Segoe UI', sans-serif" },
-
-  /* 로딩 */
-  loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: LIGHT },
-  loadingInner: { textAlign: 'center' },
-  loadingLogo: { fontSize: '36px', fontWeight: '800', color: BROWN, letterSpacing: '6px' },
-  loadingText: { color: '#999', marginTop: '12px' },
-
-  /* 헤더 */
-  header: {
-    position: 'sticky', top: 0, zIndex: 100,
-    backgroundColor: 'white',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
-  },
-  headerInner: {
-    maxWidth: '1200px', margin: '0 auto',
-    padding: '16px 32px',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-  },
-  logo: { margin: 0, fontSize: '24px', fontWeight: '800', color: BROWN, letterSpacing: '4px' },
-  nav: { display: 'flex', alignItems: 'center', gap: '12px' },
-  greeting: { fontSize: '14px', color: '#666' },
-  navBtn: {
-    padding: '8px 18px', backgroundColor: LIGHT, color: BROWN,
-    border: 'none', borderRadius: '20px', cursor: 'pointer',
-    fontSize: '13px', fontWeight: '600'
-  },
-  adminBtn: { backgroundColor: BROWN, color: 'white' },
-  logoutBtn: {
-    padding: '8px 18px', backgroundColor: 'transparent', color: '#999',
-    border: '1px solid #ddd', borderRadius: '20px', cursor: 'pointer', fontSize: '13px'
-  },
-
-  /* 히어로 */
-  hero: {
-    position: 'relative', height: '320px',
-    backgroundImage: 'url(https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1400)',
-    backgroundSize: 'cover', backgroundPosition: 'center'
-  },
-  heroOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(40,20,8,0.62)' },
-  heroContent: {
-    position: 'relative', zIndex: 1,
-    height: '100%', display: 'flex', flexDirection: 'column',
-    justifyContent: 'center', padding: '0 10%', color: 'white'
-  },
-  heroSub: { fontSize: '13px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)', margin: '0 0 12px' },
-  heroTitle: { fontSize: '36px', fontWeight: '800', margin: '0 0 12px', lineHeight: 1.3 },
-  heroDesc: { fontSize: '15px', color: 'rgba(255,255,255,0.8)', margin: 0 },
-
-  /* 메인 */
-  main: { maxWidth: '1200px', margin: '0 auto', padding: '48px 32px' },
-  section: { marginBottom: '56px' },
-  sectionHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' },
-  sectionTitle: { margin: 0, fontSize: '22px', fontWeight: '700', color: '#1a1a1a' },
-  sectionCount: {
-    fontSize: '13px', color: BROWN, backgroundColor: LIGHT,
-    padding: '4px 12px', borderRadius: '20px', fontWeight: '600'
-  },
-
-  /* 지점 */
-  branchGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' },
-  branchCard: {
-    backgroundColor: 'white', borderRadius: '16px',
-    padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    position: 'relative', overflow: 'hidden',
-    borderTop: `4px solid ${BROWN}`
-  },
-  branchTop: { display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '16px' },
-  branchIcon: { fontSize: '28px' },
-  branchName: { margin: '0 0 4px', fontSize: '17px', fontWeight: '700', color: '#1a1a1a' },
-  branchAddress: { margin: 0, fontSize: '13px', color: '#888' },
-  branchInfo: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  branchInfoItem: { fontSize: '13px', color: '#666' },
-  branchBadge: {
-    position: 'absolute', top: '20px', right: '20px',
-    backgroundColor: '#e8f5e9', color: '#2e7d32',
-    fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px'
-  },
-
-  /* 카테고리 탭 */
-  tabs: { display: 'flex', gap: '8px', marginBottom: '24px' },
-  tab: {
-    padding: '8px 22px', border: '1.5px solid #e0e0e0',
-    borderRadius: '20px', backgroundColor: 'white',
-    color: '#666', fontSize: '14px', fontWeight: '600',
-    cursor: 'pointer', transition: 'all 0.2s'
-  },
-  tabActive: { backgroundColor: BROWN, borderColor: BROWN, color: 'white' },
-
-  /* 메뉴 */
-  menuGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' },
-  menuCard: {
-    backgroundColor: 'white', borderRadius: '16px',
-    overflow: 'hidden', position: 'relative',
-    transition: 'all 0.25s ease', cursor: 'pointer'
-  },
-  menuImg: { width: '100%', height: '180px', objectFit: 'cover' },
-  menuImgPlaceholder: {
-    width: '100%', height: '180px', backgroundColor: LIGHT,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px'
-  },
-  soldoutBadge: {
-    position: 'absolute', top: '12px', right: '12px',
-    backgroundColor: '#ff4444', color: 'white',
-    fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px'
-  },
-  menuBody: { padding: '16px' },
-  categoryBadge: {
-    backgroundColor: LIGHT, color: BROWN,
-    fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px'
-  },
-  menuName: { margin: '8px 0 4px', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' },
-  menuDesc: { margin: '0 0 8px', fontSize: '13px', color: '#999', lineHeight: 1.5 },
-  menuPrice: { margin: 0, fontSize: '18px', fontWeight: '800', color: BROWN }
-};
 
 export default MainPage;

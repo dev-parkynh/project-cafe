@@ -1,5 +1,4 @@
 // src/pages/MyPage.js
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -45,167 +44,173 @@ function MyPage() {
   };
 
   const statusMap = {
-    pending:   { label: '대기중',   color: '#ff9800', bg: '#fff8e1' },
-    paid:      { label: '결제완료', color: '#2196f3', bg: '#e3f2fd' },
-    making:    { label: '제조중',   color: '#9c27b0', bg: '#f3e5f5' },
-    ready:     { label: '픽업대기', color: '#00bcd4', bg: '#e0f7fa' },
-    done:      { label: '완료',     color: '#4caf50', bg: '#e8f5e9' },
-    cancelled: { label: '취소됨',   color: '#999',    bg: '#f5f5f5' }
+    pending:   { label: '대기중',   tw: 'bg-amber-50 text-amber-600' },
+    paid:      { label: '결제완료', tw: 'bg-blue-50 text-blue-600' },
+    making:    { label: '제조중',   tw: 'bg-purple-50 text-purple-600' },
+    ready:     { label: '픽업대기', tw: 'bg-cyan-50 text-cyan-600' },
+    done:      { label: '완료',     tw: 'bg-green-50 text-green-600' },
+    cancelled: { label: '취소됨',   tw: 'bg-gray-100 text-gray-400' }
   };
 
-  const stampNum  = stampCount?.stampCount || 0;
-  const stampGoal = 10;
-  const progress  = Math.min((stampNum / stampGoal) * 100, 100);
-
-  const initials = user?.name?.charAt(0) || '?';
+  const stampNum     = stampCount?.stampCount || 0;
+  const progress     = Math.min((stampNum / 10) * 100, 100);
+  const initials     = user?.name?.charAt(0) || '?';
   const activeCoupons = coupons.filter(c => c.status === 'active').length;
 
   return (
-    <div style={styles.container}>
+    <div className="min-h-screen bg-[#F5F5F7] font-sans">
 
       {/* ── 헤더 ── */}
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <button style={styles.backBtn} onClick={() => navigate('/main')}>
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#D2D2D7]/50">
+        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/main')}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#6F4E37] hover:text-[#5C3D28] transition-colors"
+          >
             ← 메인으로
           </button>
-          <h1 style={styles.headerTitle}>마이페이지</h1>
-          <div style={{ width: '100px' }} />
+          <h1 className="text-base font-bold text-[#1D1D1F]">마이페이지</h1>
+          <div className="w-20" />
         </div>
       </header>
 
-      <main style={styles.main}>
+      <main className="max-w-3xl mx-auto px-6 py-8 space-y-5">
 
         {/* ── 프로필 카드 ── */}
-        <div style={styles.profileCard}>
-          <div style={styles.profileLeft}>
-            <div style={styles.avatar}>{initials}</div>
-            <div>
-              <h2 style={styles.profileName}>{user?.name}님</h2>
-              <p style={styles.profileEmail}>{user?.email}</p>
-              <span style={styles.profileBadge}>일반회원</span>
-            </div>
-          </div>
-          <div style={styles.profileStats}>
-            <div style={styles.profileStat}>
-              <span style={styles.statNum}>{stampNum}</span>
-              <span style={styles.statLabel}>스탬프</span>
-            </div>
-            <div style={styles.statDivider} />
-            <div style={styles.profileStat}>
-              <span style={styles.statNum}>{activeCoupons}</span>
-              <span style={styles.statLabel}>사용가능 쿠폰</span>
-            </div>
-            <div style={styles.statDivider} />
-            <div style={styles.profileStat}>
-              <span style={styles.statNum}>{orders.length}</span>
-              <span style={styles.statLabel}>주문내역</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── 스탬프 ── */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>⭐ 스탬프 카드</h2>
-          <div style={styles.stampCard}>
-            <div style={styles.stampHeader}>
-              <div>
-                <span style={styles.stampBig}>{stampNum}</span>
-                <span style={styles.stampSlash}> / {stampGoal}</span>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#F0F0F0]">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#6F4E37] rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                {initials}
               </div>
-              <p style={styles.stampMsg}>{stampCount?.message || '주문하면 스탬프가 적립돼요!'}</p>
+              <div>
+                <h2 className="text-lg font-bold text-[#1D1D1F]">{user?.name}님</h2>
+                <p className="text-sm text-[#86868B]">{user?.email}</p>
+                <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#F5F5F7] text-[#86868B] text-xs rounded-full">일반회원</span>
+              </div>
             </div>
-
-            {/* 프로그레스바 */}
-            <div style={styles.progressBg}>
-              <div style={{ ...styles.progressFill, width: `${progress}%` }} />
-            </div>
-            <p style={styles.progressLabel}>{stampGoal - stampNum > 0 ? `쿠폰까지 ${stampGoal - stampNum}개 남았어요` : '🎉 쿠폰 발급 완료!'}</p>
-
-            {/* 스탬프 아이콘 10개 */}
-            <div style={styles.stampRow}>
-              {[...Array(stampGoal)].map((_, i) => (
-                <div key={i} style={{
-                  ...styles.stampDot,
-                  backgroundColor: i < stampNum ? '#6f4e37' : '#f0e8e0',
-                  transform: i < stampNum ? 'scale(1.1)' : 'scale(1)'
-                }}>
-                  {i < stampNum ? '☕' : '○'}
+            <div className="flex gap-6">
+              {[
+                { num: stampNum, label: '스탬프' },
+                { num: activeCoupons, label: '사용가능 쿠폰' },
+                { num: orders.filter(o => o.status === 'done').length, label: '완료 주문' }
+              ].map((s, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl font-bold text-[#1D1D1F]">{s.num}</div>
+                  <div className="text-xs text-[#86868B] mt-0.5">{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
+
+        {/* ── 스탬프 카드 ── */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#F0F0F0]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-[#1D1D1F]">스탬프 카드</h3>
+            <span className="text-sm font-semibold text-[#6F4E37]">{stampNum} / 10</span>
+          </div>
+
+          {/* 스탬프 도트 */}
+          <div className="grid grid-cols-5 gap-3 mb-4">
+            {Array.from({ length: 10 }, (_, i) => (
+              <div
+                key={i}
+                className={`aspect-square rounded-full flex items-center justify-center text-sm transition-all ${
+                  i < stampNum
+                    ? 'bg-[#6F4E37] text-white shadow-sm'
+                    : 'bg-[#F5F5F7] border-2 border-[#E8E8ED]'
+                }`}
+              >
+                {i < stampNum ? '☕' : ''}
+              </div>
+            ))}
+          </div>
+
+          {/* 프로그레스바 */}
+          <div className="h-2 bg-[#F5F5F7] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#6F4E37] rounded-full transition-all duration-700"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-[#AEAEB2] mt-2">
+            {stampNum >= 10 ? '🎉 쿠폰 발급 완료!' : `${10 - stampNum}개 더 모으면 쿠폰 증정!`}
+          </p>
+        </div>
 
         {/* ── 쿠폰 ── */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>🎫 보유 쿠폰 <span style={styles.badge}>{activeCoupons}개 사용가능</span></h2>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#F0F0F0]">
+          <h3 className="font-bold text-[#1D1D1F] mb-4">
+            쿠폰 <span className="text-[#6F4E37]">{activeCoupons}장 사용가능</span>
+          </h3>
           {coupons.length === 0 ? (
-            <div style={styles.empty}>
-              <p style={styles.emptyIcon}>🎫</p>
-              <p>보유한 쿠폰이 없어요</p>
-              <p style={styles.emptyHint}>스탬프 10개를 모으면 쿠폰이 발급돼요!</p>
-            </div>
+            <p className="text-sm text-[#AEAEB2] py-4 text-center">보유한 쿠폰이 없어요</p>
           ) : (
-            <div style={styles.couponList}>
-              {coupons.map(coupon => (
-                <div key={coupon.coupon_id} style={{
-                  ...styles.couponCard,
-                  opacity: coupon.status !== 'active' ? 0.55 : 1
-                }}>
-                  <div style={styles.couponLeft}>
-                    <div style={styles.couponIconBox}>🎁</div>
-                    <div>
-                      <p style={styles.couponCode}>{coupon.coupon_code}</p>
-                      <p style={styles.couponExp}>만료: {coupon.expired_at?.substring(0, 10)}</p>
-                    </div>
+            <div className="space-y-3">
+              {coupons.map(c => (
+                <div
+                  key={c.coupon_id}
+                  className={`flex items-center justify-between p-4 rounded-xl border-l-4 ${
+                    c.status === 'active'
+                      ? 'bg-[#FFF8F5] border-[#6F4E37]'
+                      : 'bg-[#F5F5F7] border-[#D2D2D7] opacity-60'
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-[#1D1D1F]">무료 음료 쿠폰</p>
+                    <p className="text-xs text-[#86868B] mt-0.5">{c.coupon_code}</p>
+                    <p className="text-xs text-[#AEAEB2]">
+                      만료: {new Date(c.expired_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  <div style={styles.couponRight}>
-                    <span style={{
-                      ...styles.couponBadge,
-                      backgroundColor: coupon.status === 'active' ? '#e8f5e9' : '#f5f5f5',
-                      color: coupon.status === 'active' ? '#2e7d32' : '#999'
-                    }}>
-                      {coupon.status === 'active' ? '사용가능' : coupon.status === 'used' ? '사용완료' : '만료'}
-                    </span>
-                  </div>
-                  {coupon.status === 'active' && <div style={styles.couponDot} />}
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    c.status === 'active' ? 'bg-[#6F4E37] text-white' :
+                    c.status === 'used'   ? 'bg-gray-200 text-gray-500' :
+                                            'bg-gray-200 text-gray-400'
+                  }`}>
+                    {c.status === 'active' ? '사용가능' : c.status === 'used' ? '사용완료' : '만료됨'}
+                  </span>
                 </div>
               ))}
             </div>
           )}
-        </section>
+        </div>
 
         {/* ── 주문 내역 ── */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>📦 주문 내역 <span style={styles.badge}>{orders.length}건</span></h2>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#F0F0F0]">
+          <h3 className="font-bold text-[#1D1D1F] mb-4">주문 내역</h3>
           {orders.length === 0 ? (
-            <div style={styles.empty}>
-              <p style={styles.emptyIcon}>📦</p>
-              <p>주문 내역이 없어요</p>
-            </div>
+            <p className="text-sm text-[#AEAEB2] py-4 text-center">주문 내역이 없어요</p>
           ) : (
-            <div style={styles.orderList}>
-              {orders.map(order => {
-                const s = statusMap[order.status] || statusMap.cancelled;
+            <div className="space-y-3">
+              {orders.map(o => {
+                const s = statusMap[o.status] || statusMap.pending;
                 return (
-                  <div key={order.order_id} style={styles.orderCard}>
-                    <div style={styles.orderTop}>
-                      <div>
-                        <span style={styles.orderNum}>{order.order_number}</span>
-                        <span style={styles.orderDate}>{order.created_at?.substring(0, 10)}</span>
+                  <div
+                    key={o.order_id}
+                    className="flex items-center justify-between p-4 bg-[#F5F5F7] rounded-xl"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${s.tw}`}>
+                          {s.label}
+                        </span>
+                        <span className="text-xs text-[#AEAEB2]">{o.order_number}</span>
                       </div>
-                      <span style={{ ...styles.orderStatus, color: s.color, backgroundColor: s.bg }}>
-                        {s.label}
-                      </span>
+                      <p className="text-sm font-semibold text-[#1D1D1F]">
+                        {o.total_price?.toLocaleString()}원
+                      </p>
+                      <p className="text-xs text-[#AEAEB2] mt-0.5">
+                        {new Date(o.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                    <div style={styles.orderMid}>
-                      <span style={styles.orderBranch}>📍 {order.branch_name}</span>
-                      <span style={styles.orderPrice}>{order.total_price?.toLocaleString()}원</span>
-                    </div>
-                    {order.status === 'pending' && (
-                      <button style={styles.cancelBtn} onClick={() => handleCancelOrder(order.order_id)}>
-                        주문 취소
+                    {o.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelOrder(o.order_id)}
+                        className="px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        취소
                       </button>
                     )}
                   </div>
@@ -213,111 +218,11 @@ function MyPage() {
               })}
             </div>
           )}
-        </section>
+        </div>
 
       </main>
     </div>
   );
 }
-
-const BROWN = '#6f4e37';
-const LIGHT = '#f5ede6';
-
-const styles = {
-  container: { minHeight: '100vh', backgroundColor: '#f7f4f1', fontFamily: "'Segoe UI', sans-serif" },
-
-  header: { backgroundColor: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 100 },
-  headerInner: { maxWidth: '800px', margin: '0 auto', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  headerTitle: { margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' },
-  backBtn: { padding: '8px 18px', backgroundColor: LIGHT, color: BROWN, border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
-
-  main: { maxWidth: '800px', margin: '0 auto', padding: '32px' },
-
-  /* 프로필 */
-  profileCard: {
-    background: `linear-gradient(135deg, ${BROWN} 0%, #3d2b1f 100%)`,
-    borderRadius: '20px', padding: '28px 32px',
-    marginBottom: '32px', color: 'white',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    flexWrap: 'wrap', gap: '20px'
-  },
-  profileLeft: { display: 'flex', alignItems: 'center', gap: '16px' },
-  avatar: {
-    width: '60px', height: '60px', borderRadius: '50%',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '24px', fontWeight: '700', color: 'white'
-  },
-  profileName: { margin: '0 0 4px', fontSize: '20px', fontWeight: '700' },
-  profileEmail: { margin: '0 0 8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)' },
-  profileBadge: { backgroundColor: 'rgba(255,255,255,0.2)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' },
-  profileStats: { display: 'flex', alignItems: 'center', gap: '20px' },
-  profileStat: { textAlign: 'center' },
-  statNum: { display: 'block', fontSize: '28px', fontWeight: '800' },
-  statLabel: { fontSize: '11px', color: 'rgba(255,255,255,0.7)' },
-  statDivider: { width: '1px', height: '40px', backgroundColor: 'rgba(255,255,255,0.2)' },
-
-  /* 섹션 */
-  section: { marginBottom: '36px' },
-  sectionTitle: { fontSize: '18px', fontWeight: '700', color: '#1a1a1a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' },
-  badge: { fontSize: '12px', backgroundColor: LIGHT, color: BROWN, padding: '3px 10px', borderRadius: '20px', fontWeight: '600' },
-
-  /* 스탬프 */
-  stampCard: { backgroundColor: 'white', borderRadius: '16px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
-  stampHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' },
-  stampBig: { fontSize: '52px', fontWeight: '800', color: BROWN },
-  stampSlash: { fontSize: '20px', color: '#ccc' },
-  stampMsg: { color: '#888', fontSize: '14px', margin: 0 },
-  progressBg: { backgroundColor: '#f0e8e0', borderRadius: '99px', height: '8px', marginBottom: '8px' },
-  progressFill: { backgroundColor: BROWN, height: '8px', borderRadius: '99px', transition: 'width 0.6s ease' },
-  progressLabel: { fontSize: '12px', color: '#888', marginBottom: '20px' },
-  stampRow: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
-  stampDot: {
-    width: '44px', height: '44px', borderRadius: '50%',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '18px', transition: 'all 0.2s'
-  },
-
-  /* 쿠폰 */
-  couponList: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  couponCard: {
-    backgroundColor: 'white', borderRadius: '14px', padding: '18px 20px',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    position: 'relative', overflow: 'hidden',
-    borderLeft: `4px solid ${BROWN}`
-  },
-  couponLeft: { display: 'flex', alignItems: 'center', gap: '14px' },
-  couponIconBox: { fontSize: '32px' },
-  couponCode: { margin: '0 0 4px', fontWeight: '700', fontSize: '14px', color: '#1a1a1a' },
-  couponExp: { margin: 0, fontSize: '12px', color: '#999' },
-  couponRight: {},
-  couponBadge: { fontSize: '12px', fontWeight: '600', padding: '5px 14px', borderRadius: '20px' },
-  couponDot: {
-    position: 'absolute', right: '70px', top: '50%', transform: 'translateY(-50%)',
-    width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4caf50'
-  },
-
-  /* 주문 */
-  orderList: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  orderCard: { backgroundColor: 'white', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
-  orderTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' },
-  orderNum: { display: 'block', fontWeight: '700', fontSize: '14px', color: '#1a1a1a' },
-  orderDate: { display: 'block', fontSize: '12px', color: '#aaa', marginTop: '2px' },
-  orderStatus: { fontSize: '12px', fontWeight: '700', padding: '5px 12px', borderRadius: '20px' },
-  orderMid: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  orderBranch: { fontSize: '14px', color: '#666' },
-  orderPrice: { fontSize: '20px', fontWeight: '800', color: BROWN },
-  cancelBtn: {
-    marginTop: '12px', padding: '8px 18px',
-    backgroundColor: '#fff0f0', color: '#d32f2f',
-    border: '1px solid #ffcccc', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600'
-  },
-
-  /* 빈 상태 */
-  empty: { backgroundColor: 'white', borderRadius: '14px', padding: '48px', textAlign: 'center', color: '#999', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
-  emptyIcon: { fontSize: '40px', margin: '0 0 12px' },
-  emptyHint: { fontSize: '13px', color: '#bbb', margin: '8px 0 0' }
-};
 
 export default MyPage;
