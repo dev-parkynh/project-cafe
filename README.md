@@ -178,18 +178,23 @@
 - .env.production.example 작성
 - logs/ 폴더 생성
 
-### 🔜 Phase 15. AWS EC2 배포 (예정)
-- EC2 인스턴스 생성 (t2.micro 프리티어)
-- Node.js + MySQL + Nginx 설치
-- PM2로 백엔드 상시 실행
-- React 빌드 + Nginx 정적 서빙
-- 실제 URL로 서비스 오픈
+### ✅ Phase 15. AWS EC2 배포 완료
+- AWS EC2 t3.micro (서울 리전 ap-northeast-2)
+- Ubuntu 26.04 LTS 서버 세팅
+- Node.js 20 (NVM) + MySQL 8.4 + Nginx 1.28 설치
+- PM2로 백엔드 상시 실행 (ecosystem.config.js)
+- React 프로덕션 빌드 + Nginx 정적 파일 서빙
+- Nginx 리버스 프록시 (/api → Node.js 8080)
+- AWS 보안 그룹 포트 설정 (22/80/443)
+- **실제 서비스 URL: http://13.125.180.146**
 
 ### 🔜 Phase 16. 카카오 소셜 로그인 (예정)
 
-### 🔜 Phase 17. Jest 단위 테스트 (예정)
+### 🔜 Phase 17. 도메인 + HTTPS 설정 (예정)
 
-### 🔜 Phase 18. Docker 컨테이너화 (예정)
+### 🔜 Phase 18. Jest 단위 테스트 (예정)
+
+### 🔜 Phase 19. Docker 컨테이너화 (예정)
 
 ---
 

@@ -3,8 +3,12 @@
 import axios from 'axios';
 
 // 백엔드 서버 주소!
+// 개발: localhost:8080 직접 호출
+// 운영: 빈 문자열 → Nginx 리버스 프록시가 /api 처리
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: process.env.NODE_ENV === 'production'
+    ? ''
+    : 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json'
   }
