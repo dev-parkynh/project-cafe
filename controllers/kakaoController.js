@@ -75,12 +75,16 @@ exports.callback = async (req, res) => {
     console.log('[Kakao DEBUG] code length:', code?.length);
 
     // 1) 인가코드 → 카카오 액세스 토큰 교환
-    const tokenData = await httpsPost('kauth.kakao.com', '/oauth/token', {
+    const tokenBody = {
       grant_type:   'authorization_code',
       client_id:    process.env.KAKAO_CLIENT_ID,
       redirect_uri: process.env.KAKAO_REDIRECT_URI,
       code,
-    });
+    };
+    if (process.env.KAKAO_CLIENT_SECRET) {
+      tokenBody.client_secret = process.env.KAKAO_CLIENT_SECRET;
+    }
+    const tokenData = await httpsPost('kauth.kakao.com', '/oauth/token', tokenBody);
 
     if (tokenData.error) {
       console.error('[Kakao] token error:', tokenData);
