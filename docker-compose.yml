@@ -1,0 +1,56 @@
+# BREWY Docker Compose - 로컬 개발 / 포트폴리오 실행용
+# 사용법: docker compose up -d
+
+services:
+
+  # ── MySQL DB ────────────────────────────────────────────────
+  db:
+    image: mysql:8.4
+    container_name: brewy-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: brewy
+      MYSQL_USER: brewy
+      MYSQL_PASSWORD: "1234"
+      MYSQL_ROOT_PASSWORD: "root1234"
+    volumes:
+      - mysql_data:/var/lib/mysql   # DB 데이터 영구 보존
+    ports:
+      - "3307:3306"                 # 로컬 3307 → 컨테이너 3306 (기존 MySQL과 충돌 방지)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ubrewy", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Node.js 백엔드 ──────────────────────────────────────────
+  backend:
+    build: .
+    container_name: brewy-backend
+    restart: unless-stopped
+    ports:
+      - "8081:8080"                 # 로컬 8081 → 컨테이너 8080 (기존 서버와 충돌 방지)
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DB_HOST: db                   # 컨테이너 이름으로 접속 (Docker 내부 네트워크)
+      DB_PORT: 3306
+      DB_USER: brewy
+      DB_PASS: "1234"
+      DB_NAME: brewy
+      JWT_SECRET: brewy-secret-key-2024
+      JWT_EXPIRES: 1h
+      FRONTEND_URL: http://localhost:8081
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+    volumes:
+      - ./uploads:/app/uploads      # 이미지 파일 유지
+      - ./logs:/app/logs            # 로그 파일 유지
+    depends_on:
+      db:
+        condition: service_healthy  # DB 준비 완료 후 백엔드 시작
+
+# ── 볼륨 (데이터 영구 저장) ────────────────────────────────────
+volumes:
+  mysql_data:
