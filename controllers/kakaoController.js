@@ -69,6 +69,11 @@ exports.callback = async (req, res) => {
   }
 
   try {
+    // 디버그
+    console.log('[Kakao DEBUG] client_id:', process.env.KAKAO_CLIENT_ID);
+    console.log('[Kakao DEBUG] redirect_uri:', process.env.KAKAO_REDIRECT_URI);
+    console.log('[Kakao DEBUG] code length:', code?.length);
+
     // 1) 인가코드 → 카카오 액세스 토큰 교환
     const tokenData = await httpsPost('kauth.kakao.com', '/oauth/token', {
       grant_type:   'authorization_code',
