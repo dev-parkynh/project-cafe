@@ -93,28 +93,28 @@
 - 관리자 대시보드 React UI (3탭)
 - Recharts 차트 (막대 / 라인 / 파이 / 가로막대)
 
-### ✅ Phase 11~12. 이미지 업로드 + 보안 미들웨어
+### ✅ Phase 11~12. 보안 미들웨어
 - multer 이미지 업로드 (메뉴 썸네일)
 - Morgan 로깅 / Rate Limiting / PM2 설정
 
-### ✅ Phase 15. AWS EC2 배포
+### ✅ Phase 13. AWS EC2 배포
 - EC2 t3.micro + Ubuntu + Nginx + PM2 설정
 - React 프로덕션 빌드 + Nginx 정적 서빙
 - Nginx 리버스 프록시 (/api → Node.js 8080)
 
-### ✅ Phase 16. 카카오 소셜 로그인
+### ✅ Phase 14. 카카오 소셜 로그인
 - Kakao OAuth 2.0 (REST API 인가코드 방식)
 - 신규 사용자 자동 회원가입
 - 클라이언트 시크릿 보안 처리
 - DB: users 테이블 kakao_id 컬럼 추가
 
-### ✅ Phase 18. 장바구니 + 주문 기능
+### ✅ Phase 15. 장바구니 + 주문 기능
 - 메뉴 카드 [담기] 버튼
 - 하단 고정 장바구니 바
 - 바텀 시트: 수량 조절 / 지점 선택 / 픽업 시간 선택
 - 주문 완료 화면 (주문번호 / 금액 확인)
 
-### ✅ Phase 19. 도메인 + HTTPS
+### ✅ Phase 16. 도메인 + HTTPS
 - 도메인: brewy.store (가비아, 연 2,200원)
 - DNS A 레코드 → EC2 IP 연결
 - Let's Encrypt 인증서 발급 (Certbot)
