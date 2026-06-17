@@ -44,7 +44,6 @@
 - Ubuntu 26.04 LTS
 - Nginx (정적 파일 서빙 + 리버스 프록시)
 - Let's Encrypt + Certbot (HTTPS 인증서)
-- 도메인: brewy.store (가비아)
 - GitHub (버전 관리 + 배포 경로)
 
 ---
