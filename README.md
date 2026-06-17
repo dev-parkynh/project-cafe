@@ -17,7 +17,7 @@
 ## 🛠 기술 스택
 
 ### Backend
-- JAVA Node.js v20 + Express
+- JAVA + Node.js v20 + Express
 - MySQL 8.4 + ORACLE
 - JWT 인증 + bcrypt 암호화
 - Kakao OAuth 2.0 (소셜 로그인)
