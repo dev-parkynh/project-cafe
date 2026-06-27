@@ -28,6 +28,20 @@ function MyPage() {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
+      } else {
+        setUser({ name: '김브루이', email: 'sample@brewy.com' });
+        setStampCount({ stampCount: 7 });
+        setCoupons([{
+          coupon_id: 1,
+          coupon_code: 'AMRC-2026-FREE1',
+          status: 'active',
+          expired_at: '2026-12-31T00:00:00Z',
+        }]);
+        setOrders([
+          { order_id: 1, order_number: 'ORD-240628-001', status: 'done',  total_price: 9500,  created_at: '2026-06-27T10:30:00Z' },
+          { order_id: 2, order_number: 'ORD-240628-002', status: 'ready', total_price: 5000,  created_at: '2026-06-28T09:15:00Z' },
+          { order_id: 3, order_number: 'ORD-240628-003', status: 'paid',  total_price: 11000, created_at: '2026-06-28T11:00:00Z' },
+        ]);
       }
     }
   };

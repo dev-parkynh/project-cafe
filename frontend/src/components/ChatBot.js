@@ -1,10 +1,18 @@
 // src/components/ChatBot.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+
+const BUBBLE_MESSAGES = [
+  '오늘의 메뉴를 물어보세요! ☕',
+  'AI가 메뉴를 추천해드려요 🎯',
+  '궁금한 것을 물어보세요! 💬',
+];
 
 function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [bubbleIdx,     setBubbleIdx]     = useState(0);
+  const [bubbleVisible, setBubbleVisible] = useState(true);
   const [messages, setMessages] = useState([
     {
       role: 'bot',
@@ -13,6 +21,18 @@ function ChatBot() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) return;
+    const timer = setInterval(() => {
+      setBubbleVisible(false);
+      setTimeout(() => {
+        setBubbleIdx(prev => (prev + 1) % BUBBLE_MESSAGES.length);
+        setBubbleVisible(true);
+      }, 350);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isOpen]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -68,6 +88,18 @@ function ChatBot() {
 
   return (
     <>
+      {/* 말풍선 알림 */}
+      {!isOpen && (
+        <div style={{
+          ...styles.bubble,
+          opacity:   bubbleVisible ? 1 : 0,
+          transform: bubbleVisible ? 'translateX(0)' : 'translateX(8px)',
+        }}>
+          {BUBBLE_MESSAGES[bubbleIdx]}
+          <div style={styles.bubbleTail} />
+        </div>
+      )}
+
       {/* 챗봇 버튼 */}
       <button
         style={styles.chatBtn}
@@ -180,6 +212,33 @@ function ChatBot() {
 }
 
 const styles = {
+  bubble: {
+    position: 'fixed',
+    bottom: '44px',
+    right: '104px',
+    backgroundColor: '#6F4E37',
+    color: 'white',
+    padding: '10px 16px',
+    borderRadius: '20px',
+    fontSize: '13px',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 4px 16px rgba(111,78,55,0.30)',
+    zIndex: 1000,
+    transition: 'opacity 0.35s ease, transform 0.35s ease',
+    pointerEvents: 'none',
+  },
+  bubbleTail: {
+    position: 'absolute',
+    right: '-7px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: 0,
+    height: 0,
+    borderTop: '6px solid transparent',
+    borderBottom: '6px solid transparent',
+    borderLeft: '8px solid #6F4E37',
+  },
   chatBtn: {
     position: 'fixed',
     bottom: '32px',
