@@ -11,6 +11,7 @@ import {
 
 const BROWN      = '#6F4E37';
 const PIE_COLORS = ['#6F4E37','#C49A6C','#E8C9A0','#A0522D','#D2691E'];
+const COFFEE_BG  = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1400&q=80';
 
 function AdminPage() {
   const navigate  = useNavigate();
@@ -106,38 +107,53 @@ function AdminPage() {
   const tdCls = "px-4 py-3 whitespace-nowrap";
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] font-sans">
 
       {/* ── 네비게이션 ── */}
-      <header className="sticky top-0 z-50 h-11 bg-[rgba(255,255,255,0.72)] border-b border-[#D2D2D7]/30"
+      <header className="sticky top-0 z-50 h-11 bg-[rgba(255,255,255,0.85)] border-b border-[#C49A6C]/20"
         style={{ WebkitBackdropFilter: 'saturate(180%) blur(20px)', backdropFilter: 'saturate(180%) blur(20px)' }}
       >
         <div className="max-w-[1200px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-4">
-            <span className="text-[13px] font-black tracking-[4px] md:tracking-[6px] text-[#1D1D1F]">BREWY</span>
+            <span className="text-[13px] font-black tracking-[4px] md:tracking-[6px] text-[#6F4E37]">BREWY</span>
             <span className="hidden md:inline text-[12px] text-[#AEAEB2]">관리자 대시보드</span>
           </div>
           <div className="flex items-center gap-3 md:gap-5">
             <span className="hidden sm:inline text-[13px] text-[#6E6E73]">{adminName}</span>
-            <button onClick={() => navigate('/main')} className="text-[13px] text-[#6E6E73] hover:text-[#1D1D1F] transition-colors">메인</button>
+            <button onClick={() => navigate('/main')} className="text-[13px] text-[#6E6E73] hover:text-[#6F4E37] transition-colors">메인</button>
             <button onClick={handleLogout} className="text-[13px] text-[#FF3B30] hover:opacity-70 transition-opacity">로그아웃</button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-8 md:py-16">
+      {/* ── 커피 배경 히어로 헤더 ── */}
+      <div className="relative h-44 md:h-60 overflow-hidden"
+        style={{ backgroundImage: `url(${COFFEE_BG})`, backgroundSize: 'cover', backgroundPosition: 'center 60%' }}
+      >
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-6 h-full flex flex-col justify-center">
+          <p className="text-[11px] font-semibold tracking-[5px] text-[#C49A6C] mb-2 uppercase">Admin Dashboard</p>
+          <h1 className="text-[26px] md:text-[40px] font-bold text-white tracking-tight leading-tight">BREWY 관리자 대시보드</h1>
+          <p className="text-[13px] text-white/50 mt-2">{adminName}님, 오늘도 좋은 하루 되세요</p>
+        </div>
+      </div>
+
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-8 md:py-12">
 
         {/* ── 요약 통계 ── */}
-        <div className="mb-10 md:mb-16">
-          <h2 className="text-[26px] md:text-[34px] font-bold text-[#1D1D1F] tracking-tight mb-6 md:mb-10">개요</h2>
+        <div className="mb-10 md:mb-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
             {[
-              { label: '전체 메뉴',  value: products.length,                                     unit: '개', color: '#6F4E37' },
-              { label: '전체 주문',  value: orders.length,                                        unit: '건', color: '#0071E3' },
-              { label: '완료 주문',  value: orders.filter(o => o.status === 'done').length,       unit: '건', color: '#34C759' },
-              { label: '누적 매출',  value: totalRevenue.toLocaleString(),                        unit: '원', color: '#FF9F0A' },
+              { label: '전체 메뉴',  value: products.length,                                     unit: '개', color: '#6F4E37', icon: '☕' },
+              { label: '전체 주문',  value: orders.length,                                        unit: '건', color: '#0071E3', icon: '📋' },
+              { label: '완료 주문',  value: orders.filter(o => o.status === 'done').length,       unit: '건', color: '#34C759', icon: '✅' },
+              { label: '누적 매출',  value: totalRevenue.toLocaleString(),                        unit: '원', color: '#C47A2F', icon: '💰' },
             ].map((s, i) => (
-              <div key={i} className="bg-[#F5F5F7] rounded-[20px] p-4 md:p-7">
+              <div key={i}
+                className="bg-white rounded-[20px] p-4 md:p-7 hover:-translate-y-1 transition-all duration-200 cursor-default"
+                style={{ boxShadow: '0 2px 16px rgba(111,78,55,0.10)' }}
+              >
+                <div className="text-2xl mb-3">{s.icon}</div>
                 <p className="text-[12px] md:text-[13px] text-[#6E6E73] mb-2">{s.label}</p>
                 <p className="text-[24px] md:text-[36px] font-bold leading-none tracking-tight" style={{ color: s.color }}>
                   {s.value}
@@ -150,13 +166,13 @@ function AdminPage() {
 
         {/* ── 탭 네비게이션 ── */}
         <div className="overflow-x-auto mb-8">
-          <div className="flex gap-1 border-b border-[#E8E8ED] min-w-max">
+          <div className="flex gap-1 border-b border-[#E8D9CC] min-w-max">
             {[{ key:'menu', label:'메뉴 관리' }, { key:'orders', label:'주문 관리' }, { key:'stats', label:'매출 통계' }].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className={`px-4 md:px-5 py-2.5 text-[14px] font-medium transition-all border-b-2 -mb-px whitespace-nowrap ${
                   tab === t.key
-                    ? 'border-[#1D1D1F] text-[#1D1D1F]'
-                    : 'border-transparent text-[#6E6E73] hover:text-[#1D1D1F]'
+                    ? 'border-[#6F4E37] text-[#6F4E37]'
+                    : 'border-transparent text-[#6E6E73] hover:text-[#6F4E37]'
                 }`}>
                 {t.label}
               </button>
@@ -171,7 +187,7 @@ function AdminPage() {
             {/* 신규 등록 */}
             <div>
               <h3 className="text-[18px] md:text-[22px] font-semibold text-[#1D1D1F] mb-4">신규 메뉴 등록</h3>
-              <div className="bg-[#F5F5F7] rounded-[20px] p-4 md:p-7">
+              <div className="bg-white rounded-[20px] p-4 md:p-7" style={{ boxShadow: '0 2px 16px rgba(111,78,55,0.08)' }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                   <select className={inputCls} value={newProduct.category_id}
                     onChange={e => setNewProduct({ ...newProduct, category_id: Number(e.target.value) })}>
@@ -186,7 +202,7 @@ function AdminPage() {
                   <input className={inputCls} placeholder="설명 (선택)" value={newProduct.description}
                     onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} />
                   <button onClick={handleCreateProduct}
-                    className="px-4 py-3 bg-[#1D1D1F] hover:bg-[#3D3D3F] text-white text-[14px] font-medium rounded-xl transition-colors">
+                    className="px-4 py-3 bg-[#6F4E37] hover:bg-[#5A3E2B] text-white text-[14px] font-medium rounded-xl transition-colors">
                     등록
                   </button>
                 </div>
@@ -199,7 +215,7 @@ function AdminPage() {
                 <h3 className="text-[18px] md:text-[22px] font-semibold text-[#1D1D1F]">메뉴 목록</h3>
                 <span className="text-[14px] text-[#AEAEB2]">{products.length}개</span>
               </div>
-              <div className="bg-white border border-[#E8E8ED] rounded-[20px] overflow-hidden">
+              <div className="bg-white rounded-[20px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(111,78,55,0.08)' }}>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[540px]">
                     <thead>
@@ -322,7 +338,7 @@ function AdminPage() {
               ))}
             </div>
 
-            <div className="bg-[#F5F5F7] rounded-[20px] p-4 md:p-8">
+            <div className="bg-white rounded-[20px] p-4 md:p-8" style={{ boxShadow: '0 2px 16px rgba(111,78,55,0.08)' }}>
               {statsData.length === 0 ? (
                 <p className="text-[14px] text-[#AEAEB2] py-16 text-center">데이터가 없어요</p>
               ) : (
