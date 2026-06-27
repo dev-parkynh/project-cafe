@@ -5,7 +5,6 @@ import {
   Route,
   Navigate
 } from 'react-router-dom';
-import LandingPage   from './pages/LandingPage';
 import LoginPage     from './pages/LoginPage';
 import MainPage      from './pages/MainPage';
 import MyPage        from './pages/MyPage';
@@ -13,24 +12,26 @@ import AdminPage     from './pages/AdminPage';
 import KakaoCallback from './pages/KakaoCallback';
 
 function App() {
+  const token = localStorage.getItem('token');
+
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/"
-          element={<LandingPage />}
+          element={
+            token
+              ? <Navigate to="/main" />
+              : <Navigate to="/login" />
+          }
         />
         <Route
           path="/login"
           element={<LoginPage />}
         />
         <Route
-          path="/order"
-          element={<MainPage />}
-        />
-        <Route
           path="/main"
-          element={<Navigate to="/order" replace />}
+          element={<MainPage />}
         />
         <Route
           path="/mypage"
@@ -40,6 +41,7 @@ function App() {
           path="/admin"
           element={<AdminPage />}
         />
+        {/* 카카오 로그인 콜백 */}
         <Route
           path="/auth/kakao/success"
           element={<KakaoCallback />}

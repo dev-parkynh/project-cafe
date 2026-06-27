@@ -19,7 +19,7 @@ function LoginPage() {
       localStorage.setItem('token', res.data.accessToken);
       localStorage.setItem('role',  res.data.role);
       localStorage.setItem('name',  res.data.name);
-      navigate(res.data.role === 'admin' ? '/admin' : '/order');
+      navigate(res.data.role === 'admin' ? '/admin' : '/main');
     } catch {
       setError('이메일 또는 비밀번호가 틀렸어요.');
     } finally {
@@ -34,7 +34,7 @@ function LoginPage() {
       localStorage.setItem('token', res.data.accessToken);
       localStorage.setItem('role',  res.data.role);
       localStorage.setItem('name',  res.data.name);
-      navigate(res.data.role === 'admin' ? '/admin' : '/order');
+      navigate(res.data.role === 'admin' ? '/admin' : '/main');
     } catch {
       setError('로그인 실패');
     } finally {
