@@ -38,27 +38,32 @@ function MainPage() {
 
   // 모달
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [mapModalBranch,  setMapModalBranch]  = useState(null);
+  const [openBranchId,    setOpenBranchId]    = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
   useEffect(() => {
-    if (!mapModalBranch) return;
-    const coords = BRANCH_COORDS[mapModalBranch.name] || { lat: 37.5498, lng: 126.9137 };
+    if (!openBranchId) return;
+    const branch = branches.find(b => b.branch_id === openBranchId);
+    if (!branch) return;
+    const coords = BRANCH_COORDS[branch.name] || { lat: 37.5498, lng: 126.9137 };
 
     const renderMap = () => {
-      const container = document.getElementById('kakao-map');
-      if (!container) return;
-      const map = new window.kakao.maps.Map(container, {
-        center: new window.kakao.maps.LatLng(coords.lat, coords.lng),
-        level: 4,
-      });
-      const pos = new window.kakao.maps.LatLng(coords.lat, coords.lng);
-      const marker = new window.kakao.maps.Marker({ map, position: pos });
-      const info = new window.kakao.maps.InfoWindow({
-        content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${mapModalBranch.name}<br/><span style="font-size:12px;font-weight:400;color:#6E6E73;">${mapModalBranch.address || ''}</span></div>`,
-      });
-      info.open(map, marker);
+      // 슬라이드 애니메이션이 시작된 뒤 컨테이너가 가시 상태가 되도록 지연
+      setTimeout(() => {
+        const container = document.getElementById(`kakao-map-${openBranchId}`);
+        if (!container) return;
+        const map = new window.kakao.maps.Map(container, {
+          center: new window.kakao.maps.LatLng(coords.lat, coords.lng),
+          level: 4,
+        });
+        const pos = new window.kakao.maps.LatLng(coords.lat, coords.lng);
+        const marker = new window.kakao.maps.Marker({ map, position: pos });
+        const info = new window.kakao.maps.InfoWindow({
+          content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${branch.name}<br/><span style="font-size:12px;font-weight:400;color:#6E6E73;">${branch.address || ''}</span></div>`,
+        });
+        info.open(map, marker);
+      }, 80);
     };
 
     if (window.kakao?.maps) {
@@ -76,7 +81,7 @@ function MainPage() {
         document.head.appendChild(script);
       }
     }
-  }, [mapModalBranch]);
+  }, [openBranchId, branches]);
 
   const fetchData = async () => {
     try {
@@ -280,23 +285,46 @@ function MainPage() {
             <h2 className="text-[34px] font-bold text-[#1D1D1F] tracking-tight mb-2">지점 안내</h2>
             <p className="text-[16px] text-[#6E6E73]">브루이 카페 전국 지점에서 픽업 주문이 가능합니다.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {branches.map(b => (
-              <div key={b.branch_id}
-                onClick={() => setMapModalBranch(b)}
-                className="bg-[#F5F5F7] rounded-[20px] p-8 hover:shadow-[0_8px_40px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group">
-                <h3 className="text-[16px] font-semibold text-[#1D1D1F] mb-1.5">{b.name}</h3>
-                <p className="text-[13px] text-[#6E6E73] leading-relaxed mb-4">{b.address}</p>
-                <div className="space-y-1 mb-5">
-                  <p className="text-[13px] text-[#AEAEB2]">{b.phone}</p>
-                  <p className="text-[13px] text-[#AEAEB2]">{b.open_time} – {b.close_time}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+            {branches.map(b => {
+              const isOpen = openBranchId === b.branch_id;
+              return (
+                <div key={b.branch_id}
+                  className="bg-[#F5F5F7] rounded-[20px] overflow-hidden transition-shadow duration-300 hover:shadow-[0_8px_40px_rgba(0,0,0,0.10)]">
+
+                  {/* 카드 헤더 */}
+                  <button
+                    onClick={() => setOpenBranchId(isOpen ? null : b.branch_id)}
+                    className="w-full text-left p-8">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[16px] font-semibold text-[#1D1D1F] mb-1.5">{b.name}</h3>
+                        <p className="text-[13px] text-[#6E6E73] leading-relaxed mb-4">{b.address}</p>
+                        <span className="inline-block px-3 py-1 bg-green-50 text-green-600 text-[12px] font-medium rounded-full">영업중</span>
+                      </div>
+                      <span className={`text-[#AEAEB2] text-[11px] mt-1 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                    </div>
+                  </button>
+
+                  {/* 아코디언 지도 + 정보 */}
+                  <div style={{ maxHeight: isOpen ? '400px' : '0', overflow: 'hidden', transition: 'max-height 0.35s ease' }}>
+                    <div id={`kakao-map-${b.branch_id}`} style={{ width: '100%', height: '250px' }} />
+                    <div className="px-5 pt-4 pb-3 grid grid-cols-2 gap-2 bg-white">
+                      <div className="bg-[#F5F5F7] rounded-[12px] p-3">
+                        <p className="text-[11px] text-[#AEAEB2] mb-1">전화</p>
+                        <p className="text-[12px] font-semibold text-[#1D1D1F]">{b.phone || '-'}</p>
+                      </div>
+                      <div className="bg-[#F5F5F7] rounded-[12px] p-3">
+                        <p className="text-[11px] text-[#AEAEB2] mb-1">영업시간</p>
+                        <p className="text-[12px] font-semibold text-[#1D1D1F]">{b.open_time} – {b.close_time}</p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-amber-600 font-medium text-center pb-4">※ 테스트용 지점 정보입니다</p>
+                  </div>
+
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block px-3 py-1 bg-green-50 text-green-600 text-[12px] font-medium rounded-full">영업중</span>
-                  <span className="text-[12px] text-[#AEAEB2] group-hover:text-[#6F4E37] transition-colors">지도 보기 →</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -520,40 +548,6 @@ function MainPage() {
                 className="w-full py-4 bg-[#6F4E37] hover:bg-[#5C3D28] active:scale-[0.99] text-white text-[15px] font-bold rounded-2xl transition-all disabled:opacity-30">
                 {selectedProduct.is_sold_out === 1 ? '품절' : '장바구니 담기'}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 카카오맵 지점 모달 ── */}
-      {mapModalBranch && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMapModalBranch(null)} />
-          <div className="relative bg-white rounded-[28px] w-full max-w-[520px] overflow-hidden shadow-2xl">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#F5F5F7]">
-              <div>
-                <p className="text-[11px] text-amber-600 font-medium mb-1">※ 테스트용 지점 정보입니다</p>
-                <h3 className="text-[18px] font-bold text-[#1D1D1F]">{mapModalBranch.name}</h3>
-                <p className="text-[13px] text-[#6E6E73] mt-0.5">{mapModalBranch.address}</p>
-              </div>
-              <button onClick={() => setMapModalBranch(null)}
-                className="w-8 h-8 bg-[#F5F5F7] hover:bg-[#E8E8ED] rounded-full flex items-center justify-center text-[#6E6E73] text-xl leading-none transition-colors">
-                ×
-              </button>
-            </div>
-            {/* 지도 */}
-            <div id="kakao-map" style={{ width: '100%', height: '300px' }} />
-            {/* 정보 */}
-            <div className="px-6 py-4 grid grid-cols-2 gap-3">
-              <div className="bg-[#F5F5F7] rounded-[14px] p-4">
-                <p className="text-[11px] text-[#AEAEB2] mb-1">전화</p>
-                <p className="text-[13px] font-semibold text-[#1D1D1F]">{mapModalBranch.phone || '-'}</p>
-              </div>
-              <div className="bg-[#F5F5F7] rounded-[14px] p-4">
-                <p className="text-[11px] text-[#AEAEB2] mb-1">영업시간</p>
-                <p className="text-[13px] font-semibold text-[#1D1D1F]">{mapModalBranch.open_time} – {mapModalBranch.close_time}</p>
-              </div>
             </div>
           </div>
         </div>
