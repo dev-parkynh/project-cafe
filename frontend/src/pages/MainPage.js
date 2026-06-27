@@ -4,6 +4,22 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import ChatBot from '../components/ChatBot';
 
+const BRANCH_COORDS = {
+  '테스트 지점 A': { lat: 37.5498, lng: 126.9137 },
+  '테스트 지점 B': { lat: 37.5566, lng: 126.9239 },
+  '테스트 지점 C': { lat: 37.5479, lng: 126.9229 },
+};
+
+const TEST_BRANCH_NAMES = ['테스트 지점 A', '테스트 지점 B', '테스트 지점 C'];
+const TEST_BRANCH_ADDR  = '임의의 장소 (테스트용)';
+const TEST_BRANCH_PHONE = '000-0000-0000 (테스트)';
+
+const ALLERGY_INFO = {
+  '커피':   '카페인, 우유(milk) 함유 · 견과류 제조 시설 사용',
+  '논커피': '우유(milk), 대두 함유 · 견과류 제조 시설 사용',
+  '디저트': '밀(gluten), 달걀, 우유, 견과류 함유',
+};
+
 function MainPage() {
   const navigate  = useNavigate();
   const [products,  setProducts]  = useState([]);
@@ -20,7 +36,47 @@ function MainPage() {
   const [ordering,       setOrdering]       = useState(false);
   const [orderSuccess,   setOrderSuccess]   = useState(null); // 주문 완료 결과
 
+  // 모달
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [mapModalBranch,  setMapModalBranch]  = useState(null);
+
   useEffect(() => { fetchData(); }, []);
+
+  useEffect(() => {
+    if (!mapModalBranch) return;
+    const coords = BRANCH_COORDS[mapModalBranch.name] || { lat: 37.5498, lng: 126.9137 };
+
+    const renderMap = () => {
+      const container = document.getElementById('kakao-map');
+      if (!container) return;
+      const map = new window.kakao.maps.Map(container, {
+        center: new window.kakao.maps.LatLng(coords.lat, coords.lng),
+        level: 4,
+      });
+      const pos = new window.kakao.maps.LatLng(coords.lat, coords.lng);
+      const marker = new window.kakao.maps.Marker({ map, position: pos });
+      const info = new window.kakao.maps.InfoWindow({
+        content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${mapModalBranch.name}<br/><span style="font-size:12px;font-weight:400;color:#6E6E73;">${mapModalBranch.address || ''}</span></div>`,
+      });
+      info.open(map, marker);
+    };
+
+    if (window.kakao?.maps) {
+      renderMap();
+    } else {
+      const existing = document.getElementById('kakao-map-script');
+      if (existing) {
+        existing.addEventListener('load', () => window.kakao.maps.load(renderMap));
+      } else {
+        const script = document.createElement('script');
+        script.id  = 'kakao-map-script';
+        script.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=48ebe7ee28ce3da4bb7c5d6e2d32763f&autoload=false';
+        script.async = true;
+        script.onload = () => window.kakao.maps.load(renderMap);
+        document.head.appendChild(script);
+      }
+    }
+  }, [mapModalBranch]);
 
   const fetchData = async () => {
     try {
@@ -31,7 +87,12 @@ function MainPage() {
       ]);
       setUser(userRes.data.user);
       setProducts(productsRes.data.products);
-      setBranches(branchesRes.data.branches);
+      setBranches(branchesRes.data.branches.map((b, i) => ({
+        ...b,
+        name:    TEST_BRANCH_NAMES[i] ?? b.name,
+        address: TEST_BRANCH_ADDR,
+        phone:   TEST_BRANCH_PHONE,
+      })));
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
@@ -221,14 +282,19 @@ function MainPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {branches.map(b => (
-              <div key={b.branch_id} className="bg-[#F5F5F7] rounded-[20px] p-8 hover:shadow-[0_8px_40px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+              <div key={b.branch_id}
+                onClick={() => setMapModalBranch(b)}
+                className="bg-[#F5F5F7] rounded-[20px] p-8 hover:shadow-[0_8px_40px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group">
                 <h3 className="text-[16px] font-semibold text-[#1D1D1F] mb-1.5">{b.name}</h3>
                 <p className="text-[13px] text-[#6E6E73] leading-relaxed mb-4">{b.address}</p>
                 <div className="space-y-1 mb-5">
                   <p className="text-[13px] text-[#AEAEB2]">{b.phone}</p>
                   <p className="text-[13px] text-[#AEAEB2]">{b.open_time} – {b.close_time}</p>
                 </div>
-                <span className="inline-block px-3 py-1 bg-green-50 text-green-600 text-[12px] font-medium rounded-full">영업중</span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block px-3 py-1 bg-green-50 text-green-600 text-[12px] font-medium rounded-full">영업중</span>
+                  <span className="text-[12px] text-[#AEAEB2] group-hover:text-[#6F4E37] transition-colors">지도 보기 →</span>
+                </div>
               </div>
             ))}
           </div>
@@ -259,7 +325,8 @@ function MainPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {filteredProducts.map(p => (
               <div key={p.product_id}
-                className={`bg-white rounded-[20px] overflow-hidden transition-all duration-300 ${
+                onClick={() => setSelectedProduct(p)}
+                className={`bg-white rounded-[20px] overflow-hidden transition-all duration-300 cursor-pointer ${
                   p.is_sold_out === 1 ? 'opacity-50' : 'hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]'
                 }`}>
 
@@ -287,7 +354,7 @@ function MainPage() {
                     <p className="text-[14px] font-bold text-[#1D1D1F]">{p.price?.toLocaleString()}원</p>
                     <button
                       disabled={p.is_sold_out === 1}
-                      onClick={() => addToCart(p)}
+                      onClick={e => { e.stopPropagation(); addToCart(p); }}
                       className="px-3 py-1.5 bg-[#1D1D1F] hover:bg-[#3D3D3F] active:scale-95 text-white text-[12px] font-medium rounded-full transition-all disabled:opacity-30">
                       담기
                     </button>
@@ -403,6 +470,90 @@ function MainPage() {
                 className="w-full py-4 bg-[#6F4E37] hover:bg-[#5C3D28] active:scale-[0.99] text-white text-[16px] font-bold rounded-2xl transition-all disabled:opacity-50">
                 {ordering ? '주문 중...' : `${cartTotal.toLocaleString()}원 주문하기`}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 메뉴 상세 모달 ── */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
+          <div className="relative bg-white rounded-[28px] w-full max-w-[400px] overflow-hidden shadow-2xl">
+            {/* 이미지 */}
+            <div className="relative h-56">
+              {getImageUrl(selectedProduct.image_url) ? (
+                <img src={getImageUrl(selectedProduct.image_url)} alt={selectedProduct.name}
+                  className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-[#F5F5F7] flex items-center justify-center">
+                  <span className="text-6xl opacity-20">☕</span>
+                </div>
+              )}
+              <button onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 right-4 w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white text-xl leading-none transition-colors">
+                ×
+              </button>
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
+            </div>
+            {/* 내용 */}
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-2">
+                <h2 className="text-[22px] font-bold text-[#1D1D1F] tracking-tight">{selectedProduct.name}</h2>
+                <span className="text-[22px] font-bold text-[#6F4E37] ml-4 whitespace-nowrap">{selectedProduct.price?.toLocaleString()}원</span>
+              </div>
+              <span className="inline-block px-2.5 py-1 bg-[#F5F5F7] text-[#6E6E73] text-[12px] rounded-full mb-3">{selectedProduct.category_name}</span>
+              {selectedProduct.description && (
+                <p className="text-[14px] text-[#6E6E73] mb-4 leading-relaxed">{selectedProduct.description}</p>
+              )}
+              {/* 알레르기 */}
+              <div className="bg-amber-50 rounded-[14px] p-4 mb-5">
+                <p className="text-[11px] font-semibold text-amber-700 mb-1">⚠ 알레르기 정보</p>
+                <p className="text-[12px] text-amber-600 leading-relaxed">
+                  {ALLERGY_INFO[selectedProduct.category_name] || '밀(gluten), 우유(milk) 함유 · 제조 시설 내 견과류 사용'}
+                </p>
+              </div>
+              {/* 버튼 */}
+              <button
+                disabled={selectedProduct.is_sold_out === 1}
+                onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
+                className="w-full py-4 bg-[#6F4E37] hover:bg-[#5C3D28] active:scale-[0.99] text-white text-[15px] font-bold rounded-2xl transition-all disabled:opacity-30">
+                {selectedProduct.is_sold_out === 1 ? '품절' : '장바구니 담기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 카카오맵 지점 모달 ── */}
+      {mapModalBranch && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMapModalBranch(null)} />
+          <div className="relative bg-white rounded-[28px] w-full max-w-[520px] overflow-hidden shadow-2xl">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#F5F5F7]">
+              <div>
+                <p className="text-[11px] text-amber-600 font-medium mb-1">※ 테스트용 지점 정보입니다</p>
+                <h3 className="text-[18px] font-bold text-[#1D1D1F]">{mapModalBranch.name}</h3>
+                <p className="text-[13px] text-[#6E6E73] mt-0.5">{mapModalBranch.address}</p>
+              </div>
+              <button onClick={() => setMapModalBranch(null)}
+                className="w-8 h-8 bg-[#F5F5F7] hover:bg-[#E8E8ED] rounded-full flex items-center justify-center text-[#6E6E73] text-xl leading-none transition-colors">
+                ×
+              </button>
+            </div>
+            {/* 지도 */}
+            <div id="kakao-map" style={{ width: '100%', height: '300px' }} />
+            {/* 정보 */}
+            <div className="px-6 py-4 grid grid-cols-2 gap-3">
+              <div className="bg-[#F5F5F7] rounded-[14px] p-4">
+                <p className="text-[11px] text-[#AEAEB2] mb-1">전화</p>
+                <p className="text-[13px] font-semibold text-[#1D1D1F]">{mapModalBranch.phone || '-'}</p>
+              </div>
+              <div className="bg-[#F5F5F7] rounded-[14px] p-4">
+                <p className="text-[11px] text-[#AEAEB2] mb-1">영업시간</p>
+                <p className="text-[13px] font-semibold text-[#1D1D1F]">{mapModalBranch.open_time} – {mapModalBranch.close_time}</p>
+              </div>
             </div>
           </div>
         </div>
